@@ -191,7 +191,7 @@ func newVCardImpl(src interface{}, options VCardOptions) (*VCard, error) {
 	}
 
 	var p interface{}
-	for _, p = range top[1].([]interface{}) {
+	for _, p = range properties {
 		property, err := decodeVCardProperty(p)
 
 		if err != nil {
@@ -291,13 +291,19 @@ func vCardError(e string) error {
 }
 
 func readParameters(p interface{}) (map[string][]string, error) {
-	params := map[string][]string{}
+	// ignore interface slice
+	if _, ok := p.([]interface{}); ok {
+		return nil, nil
+	}
 
-	if _, ok := p.(map[string]interface{}); !ok {
+	pm, ok := p.(map[string]interface{})
+	if !ok {
 		return nil, vCardError("jCard parameters invalid")
 	}
 
-	for k, v := range p.(map[string]interface{}) {
+	params := map[string][]string{}
+
+	for k, v := range pm {
 		if s, ok := v.(string); ok {
 			params[k] = append(params[k], s)
 		} else if arr, ok := v.([]interface{}); ok {
